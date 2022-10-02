@@ -1,9 +1,29 @@
+import logging
 import random
 
 import vk_api
 from environs import Env
 from google.cloud import dialogflow
+from telegram import Bot
 from vk_api.longpoll import VkLongPoll, VkEventType
+
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+)
+
+logger = logging.getLogger(__name__)
+
+
+class LogsHandler(logging.Handler):
+
+    def emit(self, record):
+        log_entry = self.format(record)
+        self.bot.send_message(chat_id=self.chat_id, text=log_entry)
+
+    def __init__(self, logger_chat_id, chat_id):
+        logging.Handler.__init__(self)
+        self.chat_id = chat_id
+        self.bot = Bot(logger_chat_id)
 
 
 def reply(event, vk_api, google_project_name):
@@ -29,10 +49,16 @@ if __name__ == "__main__":
     env.read_env()
     vk_token = env.str('VK_TOKEN')
     google_project_name = env.str('GOOGLE_PROJECT_NAME')
+    tg_loger_token = env.str('TELEGRAM_LOGGER_TOKEN')
+    logger_chat_id = env('TG_LOGGER_CHAT_ID')
+    logger.addHandler(LogsHandler(tg_loger_token, logger_chat_id))
+
     vk_session = vk_api.VkApi(token=vk_token)
     vk_api = vk_session.get_api()
     longpoll = VkLongPoll(vk_session)
-
-    for event in longpoll.listen():
-        if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-            reply(event, vk_api, google_project_name)
+    try:
+        for event in longpoll.listen():
+            if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+                reply(event, vk_api, google_project_name)
+    except Exception as err:
+        logger.exception(err)

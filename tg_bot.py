@@ -2,7 +2,7 @@ import logging
 
 from environs import Env
 from google.cloud import dialogflow
-from telegram import Update, ForceReply
+from telegram import Update, ForceReply, Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 logging.basicConfig(
@@ -10,6 +10,18 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+
+
+class LogsHandler(logging.Handler):
+
+    def emit(self, record):
+        log_entry = self.format(record)
+        self.bot.send_message(chat_id=self.chat_id, text=log_entry)
+
+    def __init__(self, logger_chat_id, chat_id):
+        logging.Handler.__init__(self)
+        self.chat_id = chat_id
+        self.bot = Bot(logger_chat_id)
 
 
 def start(update: Update, context: CallbackContext) -> None:
@@ -43,6 +55,13 @@ def main() -> None:
 if __name__ == '__main__':
     env = Env()
     env.read_env()
-    tg_token = env.str('TELEGRAM_TOKEN')
     google_project_name = env.str('GOOGLE_PROJECT_NAME')
-    main()
+    tg_token = env.str('TELEGRAM_TOKEN')
+    tg_loger_token = env.str('TELEGRAM_LOGGER_TOKEN')
+    logger_chat_id = env('TG_LOGGER_CHAT_ID')
+    logger.addHandler(LogsHandler(tg_loger_token, logger_chat_id))
+    while True:
+        try:
+            main()
+        except Exception as err:
+            logger.exception(err)

@@ -29,8 +29,7 @@ def help_command(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Help!')
 
 
-def echo(update: Update, context: CallbackContext) -> None:
-    """Echo the user message."""
+def reply(update: Update, context: CallbackContext) -> None:
     session_client = dialogflow.SessionsClient()
     session = session_client.session_path(google_project_name, update.message.chat_id)
     text_input = dialogflow.TextInput(text=update.message.text, language_code='ru')
@@ -54,7 +53,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("help", help_command))
 
     # on non command i.e message - echo the message on Telegram
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, reply))
 
     # Start the Bot
     updater.start_polling()

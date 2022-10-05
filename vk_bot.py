@@ -1,10 +1,12 @@
 import logging
 import random
 
-from common_objects import get_dialogflow_response, LogsHandler
 from environs import Env
 from vk_api import VkApi
 from vk_api.longpoll import VkLongPoll, VkEventType
+
+from df_response import get_dialogflow_response
+from log_handler import LogsHandler
 
 logger = logging.getLogger(__name__)
 

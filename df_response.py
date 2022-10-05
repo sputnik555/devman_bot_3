@@ -9,5 +9,4 @@ def get_dialogflow_response(google_project_name, message, chat_id):
     response = session_client.detect_intent(
         request={"session": session, "query_input": query_input}
     )
-    if not response.query_result.intent.is_fallback:
-        return response
+    return response

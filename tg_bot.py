@@ -24,8 +24,7 @@ def reply(update: Update, context: CallbackContext) -> None:
         update.message.text,
         update.message.chat_id
     )
-    if response:
-        update.message.reply_text(response.query_result.fulfillment_text)
+    update.message.reply_text(response.query_result.fulfillment_text)
 
 
 def main() -> None:

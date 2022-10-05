@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def reply(event, vk_api, google_project_name):
     response = get_dialogflow_response(google_project_name, event.text, event.user_id)
-    if response:
+    if not response.query_result.intent.is_fallback:
         vk_api.messages.send(
             user_id=event.user_id,
             message=response.query_result.fulfillment_text,
